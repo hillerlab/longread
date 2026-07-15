@@ -31,7 +31,7 @@ process XLOCI_EXON {
     task.ext.when == null || task.ext.when
 
     script:
-    def args          = task.ext.args   ?: ''
+    def args          = params.pbsim_mode == "trans" ? "--as-tsv" : ""
     def prefix        = task.ext.prefix ?: "${meta.id}"
     """
     xloci \\
