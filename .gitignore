@@ -1,0 +1,20 @@
+# Nextflow
+.nextflow/
+.nextflow.log*
+work/
+results/
+*.pipeline_info/
+CLAUDE.md
+
+# Artifacts
+docs/decisions.md
+.claude/
+src/test.json
+
+# Rust build artifacts
+modules/external/longread/target/
+**/*.rs.bk
+
+# Editor / OS
+*.swp
+.DS_Store
