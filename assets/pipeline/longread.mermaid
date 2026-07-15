@@ -1,0 +1,37 @@
+flowchart TD
+    inputs["BED12 + transcript_gene.tsv + genome (+ chrom.sizes)"] --> PREPARE
+
+    subgraph PREPARE_TRANSCRIPTOME
+        PREPARE["LONGREAD_PREPARE\n(prepare: events, fusions, expression)"]
+        XLOCI["XLOCI_EXTRACT\n(spliced transcript sequences)"]
+        PBSIM_IN["LONGREAD_PBSIM\n(PBSIM3 transcript input)"]
+        PREPARE -->|isoforms.bed| XLOCI
+        PREPARE -->|isoform_depth.tsv + manifest.tsv| PBSIM_IN
+        XLOCI -->|sequences.tsv| PBSIM_IN
+    end
+
+    subgraph SIMULATE_SUBREADS
+        SPLIT["LONGREAD_SPLIT\n(balanced chunks)"]
+        PBSIM["PBSIM3_TRANS\n(--strategy trans, per chunk)"]
+        MERGE["MERGE_SUBREADS\n(samtools merge)"]
+        SPLIT -->|chunk_*.transcript.tsv| PBSIM
+        PBSIM -->|chunk subreads.bam| MERGE
+    end
+
+    PBSIM_IN -->|pbsim.transcript.tsv| SPLIT
+    MERGE --> SUBREADS["prefix.subreads.bam"]
+    SUBREADS --> VALIDATE["VALIDATE_BAM"]
+
+    subgraph PROCESS_ISOSEQ["PROCESS_ISOSEQ (optional: do_ccs / do_isoseq_cluster)"]
+        CCS["CCS\n(per chunk, HiFi)"]
+        MERGE_CCS["MERGE_CCS"]
+        CLUSTER["ISOSEQ_CLUSTER\n(isoseq cluster2)"]
+        CCS -->|chunk ccs.bam| MERGE_CCS
+        MERGE_CCS -->|prefix.ccs.bam| CLUSTER
+    end
+
+    PBSIM -->|chunk subreads.bam| CCS
+    MERGE_CCS --> CCSBAM["prefix.ccs.bam"]
+    CLUSTER --> CLUSTERED["prefix.clustered.bam"]
+    CCSBAM --> VALIDATE
+    CLUSTERED --> VALIDATE

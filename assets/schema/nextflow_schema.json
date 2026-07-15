@@ -1,0 +1,122 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "https://raw.githubusercontent.com/hillerlab/longread/master/nextflow_schema.json",
+    "title": "hillerlab/longread pipeline parameters",
+    "description": "Simulate PacBio Iso-Seq data from BED12 + transcript-gene mapping + genome",
+    "type": "object",
+    "definitions": {
+        "input_output": {
+            "title": "Input/output",
+            "type": "object",
+            "required": ["bed", "transcript_gene", "sequence", "outdir"],
+            "properties": {
+                "bed": { "type": "string", "format": "file-path", "description": "BED12 transcript annotation." },
+                "transcript_gene": { "type": "string", "format": "file-path", "description": "Transcript to gene mapping TSV." },
+                "sequence": { "type": "string", "format": "file-path", "description": "Reference genome (.fa/.fa.gz/.2bit)." },
+                "chrom_sizes": { "type": "string", "format": "file-path", "description": "Chromosome sizes; enables coordinate-bounds validation." },
+                "outdir": { "type": "string", "format": "directory-path", "default": "results", "description": "Output directory." },
+                "prefix": { "type": "string", "default": "simulation", "description": "Output prefix / sample id." }
+            }
+        },
+        "determinism": {
+            "title": "Determinism / resources",
+            "type": "object",
+            "properties": {
+                "seed": { "type": "integer", "default": 42, "description": "Global RNG seed." },
+                "threads": { "type": "integer", "default": 4, "minimum": 1, "description": "Threads for multi-threaded tools." }
+            }
+        },
+        "isoform_generation": {
+            "title": "Alternative-isoform generation",
+            "type": "object",
+            "properties": {
+                "new_isoforms_per_gene": { "type": "integer", "minimum": 0, "description": "Fixed new isoforms per gene (mutually exclusive with mean/max)." },
+                "mean_new_isoforms_per_gene": { "type": "number", "default": 1.0, "minimum": 0, "description": "Poisson mean of new isoforms per gene." },
+                "max_new_isoforms_per_gene": { "type": "integer", "default": 5, "minimum": 0, "description": "Poisson cap." },
+                "event_weights": { "type": "string", "default": "donor=1,acceptor=1,skip=1,retention=1,truncation=1", "description": "Event selection weights." },
+                "max_event_attempts": { "type": "integer", "default": 100, "minimum": 1, "description": "Max attempts per requested isoform." },
+                "minimum_transcript_length": { "type": "integer", "default": 0, "minimum": 0, "description": "Minimum transcript (exonic) length." }
+            }
+        },
+        "fusions": {
+            "title": "Fusions",
+            "type": "object",
+            "properties": {
+                "fusion_count": { "type": "integer", "default": 0, "minimum": 0, "description": "Requested unique fusion transcripts." },
+                "min_fusion_intron": { "type": "integer", "default": 1, "minimum": 1, "description": "Minimum genomic intron between partners." },
+                "max_fusion_distance": { "type": "integer", "minimum": 0, "description": "Maximum genomic distance between partner gene spans." },
+                "fusion_expression_scale": { "type": "number", "default": 1.0, "minimum": 0, "description": "Multiplier for fusion pseudo-gene raw weights." }
+            }
+        },
+        "expression": {
+            "title": "Expression",
+            "type": "object",
+            "properties": {
+                "total_molecules": { "type": "integer", "default": 100000, "minimum": 0, "description": "Total molecule budget across all genes." },
+                "alpha": { "type": "number", "default": 4.0, "minimum": 0, "description": "Zipf coefficient for within-gene isoform allocation." }
+            }
+        },
+        "pbsim": {
+            "title": "PBSIM3",
+            "type": "object",
+            "properties": {
+                "pbsim_method": { "type": "string", "default": "errhmm", "enum": ["errhmm", "qshmm"], "description": "PBSIM3 quality model method." },
+                "pbsim_model": { "type": "string", "format": "file-path", "description": "PBSIM3 model file." },
+                "pass_count": { "type": "integer", "default": 10, "minimum": 1, "description": "Sequencing passes (>=2 required for CCS)." },
+                "pbsim_chunks": { "type": "integer", "default": 1, "minimum": 1, "description": "Number of parallel PBSIM3 chunks." }
+            }
+        },
+        "optional_stages": {
+            "title": "Optional stages",
+            "type": "object",
+            "properties": {
+                "do_ccs": { "type": "boolean", "default": false, "description": "Run CCS (requires pass_count >= 2)." },
+                "do_isoseq_cluster": { "type": "boolean", "default": false, "description": "Run Iso-Seq clustering (requires do_ccs)." },
+                "isoseq_min_rq": { "type": "number", "default": 0.99, "minimum": 0, "maximum": 1, "description": "CCS minimum predicted read quality." }
+            }
+        },
+        "containers": {
+            "title": "Container images",
+            "type": "object",
+            "properties": {
+                "container_longread": { "type": "string" },
+                "container_xloci": { "type": "string" },
+                "container_pbsim3": { "type": "string" },
+                "container_ccs": { "type": "string" },
+                "container_isoseq": { "type": "string" },
+                "container_samtools": { "type": "string" }
+            }
+        },
+        "resources": {
+            "title": "Resource ceilings",
+            "type": "object",
+            "properties": {
+                "max_cpus": { "type": "integer", "default": 16, "minimum": 1 },
+                "max_memory": { "type": "string", "default": "64.GB" },
+                "max_time": { "type": "string", "default": "48.h" },
+                "slurm_queue": { "type": "string" }
+            }
+        },
+        "generic": {
+            "title": "Generic",
+            "type": "object",
+            "properties": {
+                "validate_params": { "type": "boolean", "default": true },
+                "publish_dir_mode": { "type": "string", "default": "copy", "enum": ["copy", "symlink", "link", "rellink", "move"] },
+                "help": { "type": "boolean", "default": false }
+            }
+        }
+    },
+    "allOf": [
+        { "$ref": "#/definitions/input_output" },
+        { "$ref": "#/definitions/determinism" },
+        { "$ref": "#/definitions/isoform_generation" },
+        { "$ref": "#/definitions/fusions" },
+        { "$ref": "#/definitions/expression" },
+        { "$ref": "#/definitions/pbsim" },
+        { "$ref": "#/definitions/optional_stages" },
+        { "$ref": "#/definitions/containers" },
+        { "$ref": "#/definitions/resources" },
+        { "$ref": "#/definitions/generic" }
+    ]
+}
