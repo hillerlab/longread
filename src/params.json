@@ -1,0 +1,45 @@
+{
+    "_comment": "Copy this file, fill in your paths, and pass it with: nextflow run main.nf -params-file my_params.json",
+    "bed": null,
+    "transcript_gene": null,
+    "sequence": null,
+    "outdir": "results",
+    "prefix": "simulation",
+
+    "// Container configuration": "",
+    "use_container": true,
+
+    "// Determinism / resources": "",
+    "seed": 42,
+
+    "// Alternative-isoform generation (mutually exclusive count modes)": "",
+    "new_isoforms_per_gene": null,
+    "mean_new_isoforms_per_gene": 1.0,
+    "max_new_isoforms_per_gene": 5,
+    "event_weights": "donor=1,acceptor=1,skip=1,retention=1,truncation=1",
+    "max_event_attempts": 100,
+    "minimum_transcript_length": 200,
+
+    "// Fusions": "",
+    "fusion_count": 0,
+    "min_fusion_intron": 1,
+    "max_fusion_distance": null,
+    "fusion_expression_scale": 1.0,
+
+    "// Expression": "",
+    "total_molecules": 100000,
+    "alpha": 4.0,
+
+    "// PBSIM3": "",
+    "pbsim_method": "errhmm",
+    "pbsim_model": "${projectDir}/../assets/pbsim_models/ERRHMM-SEQUEL.model",
+    "pass_count": 10,
+    "pbsim_chunks": 100,
+    "pbsim_machine": "SEQUEL",
+
+    "// Optional stages": "",
+    "do_ccs": false,
+    "do_isoseq_cluster": false,
+    "ccs_chunk": 10,
+    "isoseq_min_rq": 0.95
+}
