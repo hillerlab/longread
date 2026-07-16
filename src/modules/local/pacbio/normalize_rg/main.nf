@@ -40,7 +40,7 @@ process NORMALIZE_PACBIO_RG {
     script:
     """
     # Pass the (potentially thousands of) input BAMs via a list file rather than argv.
-    ls -1 *.bam > bam.list
+    find . -maxdepth 1 -name "*.bam" -printf "%f\n" > bam.list
 
     longread rg \\
         --movie "movie.${meta.id}" \\

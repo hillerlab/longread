@@ -22,11 +22,13 @@ process PBTK_PBMERGE {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
+    find input/ -maxdepth 1 -name "*.bam" > bams.fofn
+
     pbmerge \\
         -o ${prefix}.merged.bam \\
         -j ${task.cpus} \\
         ${args} \\
-        ${bams}
+        bams.fofn
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
