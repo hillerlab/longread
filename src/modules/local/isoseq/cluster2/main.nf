@@ -29,10 +29,10 @@ process ISOSEQ_CLUSTER2 {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
-    def reads = bam.size() > 1 ? "${bam.join(' ')}" : "${bam[0]}"
     def fofn = "${prefix}.flnc.fofn"
    """
-    echo "$reads" | tr ' ' '\n' > $fofn
+    # List the staged input BAMs from disk instead of interpolating them into the script.
+    find . -maxdepth 1 -name '*.bam' | sed 's|^\\./||' | sort > $fofn
 
     isoseq \\
         cluster2 \\

@@ -25,7 +25,8 @@ process MERGE_CCS {
 
     script:
     """
-    samtools merge -@ ${task.cpus} -f ${meta.id}.ccs.bam ${bams}
+    find . -maxdepth 1 -name '*.bam' ! -name '${meta.id}.ccs.bam' | sed 's|^\\./||' | sort > bam.list
+    samtools merge -@ ${task.cpus} -f -b bam.list ${meta.id}.ccs.bam
     samtools quickcheck -u ${meta.id}.ccs.bam
 
     cat <<-END_VERSIONS > versions.yml
