@@ -60,8 +60,9 @@ process PBSIM3 {
           rm "\${sam}"
       done
 
-      cat *.maf > maf.tmp
-      rm *.maf
+      # wgs mode writes one .maf/.ref per transcript: never expand them on argv.
+      find . -maxdepth 1 -name '*.maf' -print0 | sort -z | xargs -0 -r cat > maf.tmp
+      find . -maxdepth 1 -name '*.maf' -delete
       mv maf.tmp ${out_maf}
 
       # Map each split reference file to its FASTA entry.
@@ -75,7 +76,7 @@ process PBSIM3 {
           ' "\${ref}" >> ${ref_map}
       done
 
-      rm *.ref
+      find . -maxdepth 1 -name '*.ref' -delete
     else
       # PBSIM3 emits multipass reads as BAM or SAM depending on the build; normalise to BAM.
       if [ -f ${idpfx}.bam ]; then
