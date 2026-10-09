@@ -1,6 +1,6 @@
 # longread engine — multi-stage build of the Rust binary.
-# Build context: this directory (modules/external/longread/).
-#   docker build -t hillerlab/longread:0.1.0 modules/external/longread
+# Build context: this directory (modules/longread/).
+#   docker build -t hillerlab/longread:0.1.0 modules/longread
 FROM rust:1-slim-bookworm AS build
 WORKDIR /src
 # gcc: the `libdeflate-sys` crate (fast bgzf codec used by the PacBio BAM subcommands)
