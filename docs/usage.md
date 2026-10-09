@@ -64,7 +64,7 @@ nextflow run src/main.nf -profile docker \
 
 Key knobs: `--new_isoforms_per_gene` **or** `--mean_new_isoforms_per_gene`/`--max_new_isoforms_per_gene`,
 `--event_weights`, `--fusion_count`, `--total_molecules`, `--alpha`, `--pbsim_method`, `--pass_count`,
-`--pbsim_chunks`, `--do_ccs`, `--do_isoseq_cluster`, `--seed`. Full list: `nextflow run src/main.nf --help`.
+`--pbsim_mode` (`wgs`|`trans`), `--pbsim_chunks` (trans: number of chunks), `--pbsim_records_per_chunk` (wgs: transcripts per PBSIM3 task), `--do_ccs`, `--do_isoseq_cluster`, `--seed`. Full list: `nextflow run src/main.nf --help`.
 
 ## Outputs (`--outdir`)
 

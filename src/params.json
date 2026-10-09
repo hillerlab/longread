@@ -35,6 +35,7 @@
     "pbsim_model": "${projectDir}/../assets/pbsim_models/ERRHMM-SEQUEL.model",
     "pass_count": 10,
     "pbsim_chunks": 100,
+    "pbsim_records_per_chunk": 1000,
     "pbsim_machine": "SEQUEL",
 
     "// Optional stages": "",
