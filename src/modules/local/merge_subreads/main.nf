@@ -27,7 +27,8 @@ process MERGE_SUBREADS {
 
     script:
     """
-    samtools merge -@ ${task.cpus} -f ${meta.id}.subreads.bam ${bams}
+    find . -maxdepth 1 -name '*.bam' ! -name '${meta.id}.subreads.bam' | sed 's|^\\./||' | sort > bam.list
+    samtools merge -@ ${task.cpus} -f -b bam.list ${meta.id}.subreads.bam
     samtools quickcheck -u ${meta.id}.subreads.bam
 
     cat ${mafs} > ${meta.id}.subreads.maf

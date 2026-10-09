@@ -1,5 +1,38 @@
 # Changelog
 
+## v0.0.2 — 2026-10-09
+
+### Summary
+
+Scaling and robustness pass over the simulation path: PBSIM3 task sizing no longer doubles as a chunk count in wgs mode, chunks carry unique ids so prefixes and outputs never collide, and the modules that stage many inputs read them from the task directory instead of expanding them onto the command line.
+
+### Added
+
+#### Rust transcript and expression engine (`modules/longread/`, v0.0.7)
+
+- **Molecule cap per transcript record**: `split` now breaks records heavier than 50,000 molecules (sense or antisense) into near-equal rows that keep the same transcript id, conserving the total counts exactly. This works around PBSIM3 3.0.4 trans mode segfaulting around ~60,000 molecules of a single transcript and additionally spreads heavy transcripts across chunks during bin packing.
+
+#### Nextflow DSL2 pipeline (`src/`)
+
+- **`pbsim_records_per_chunk` parameter** (default `1000`): number of FASTA records (transcripts) per PBSIM3 task in wgs mode. `pbsim_chunks` (default `10`) is now trans-mode only.
+- **Unique chunk ids in trans mode**: each chunk gets `<sample>.chunk_N`, so PBSIM3 prefixes, derived seeds, chunk MAF names and subread BAM names never collide across chunks.
+- **trans-mode `ref_map` output**: the PBSIM3 module now emits the chunk MAF and the `ref_map.tsv` (transcript id → fasta entry) that `merge_subreads` expects, matching the wgs code path.
+
+### Changed
+
+- Pipeline manifests bumped to `v0.0.2` (`nextflow.config`), engine crate to `0.0.7`.
+- `test` profile: `pbsim_chunks = 2` for trans mode, `pbsim_records_per_chunk = 2` for wgs mode.
+- Whole-pipeline image (`assets/docker/Dockerfile`) builds the engine from `modules/longread`, installs `pbtk 3.5.0` (required by the `pbtk/pbindex` and `pbtk/pbmerge` modules), symlinks bioconda's `pbsim` to `pbsim3` (the module invokes `pbsim3`, the package installs `pbsim`), and bumps `xloci` to `0.0.7`.
+
+### Fixed
+
+- **Staged inputs are listed from disk**: `isoseq/cluster2`, `merge_ccs`, `merge_subreads` and `pacbio/validate_ccs_chunks` build `bam.list`/`.fofn` with `find ... | sort` instead of interpolating staged BAMs into the process script, so the pipeline no longer grows command lines with chunk counts.
+- **Per-transcript MAF handling in pbsim3**: wgs mode concatenates with `find -print0 | sort -z | xargs -0 cat` and deletes with `find -delete` instead of `cat *.maf` / `rm *.maf`.
+
+### Technical notes
+
+- `docs/usage.md` documents the `pbsim_mode`/`pbsim_chunks`/`pbsim_records_per_chunk` knob split.
+
 ## v0.0.1 — 2026-07-15
 
 ### Summary

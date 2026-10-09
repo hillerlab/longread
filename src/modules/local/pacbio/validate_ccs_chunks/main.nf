@@ -29,7 +29,7 @@ process VALIDATE_CCS_CHUNKS {
     script:
     """
     # Pass the input BAMs via a list file rather than argv.
-    ls -1 *.bam > bam.list
+    find . -maxdepth 1 -name '*.bam' | sed 's|^\\./||' | sort > bam.list
 
     longread check \\
         --bams bam.list \\

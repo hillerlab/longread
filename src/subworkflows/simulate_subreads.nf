@@ -42,10 +42,15 @@ workflow SIMULATE_SUBREADS {
           ch_chunks = LONGREAD_SPLIT.out.chunks
               .map { meta, files -> [ meta, files instanceof List ? files : [ files ] ] }
               .transpose()
+              // Give each chunk its own id so prefixes, seeds and BAM names never collide.
+              .map { meta, chunk ->
+                  def chunk_id = (chunk.name =~ /(chunk_\d+)/)[0][1]
+                  [ meta + [ id: "${meta.id}.${chunk_id}", id_former: meta.id ], chunk ]
+              }
       } else if (params.pbsim_mode == "wgs") {
           ch_transcript
               .splitFasta(
-                  by: params.pbsim_chunks,
+                  by: params.pbsim_records_per_chunk,
                   file: 'chunk'
               )
               .map { meta, chunk ->
