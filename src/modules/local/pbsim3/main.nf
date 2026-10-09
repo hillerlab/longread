@@ -34,6 +34,9 @@ process PBSIM3 {
     def out_maf = "${meta.id}.subreads.maf"
     def ref_map = "${meta.id}.ref_map.tsv"
 
+    // Derive a deterministic per-chunk seed so error streams differ between chunks.
+    def seed = params.seed + (meta.id.toString().hashCode() & 0x7fffffff) % 1000000
+
     def mode = params.pbsim_mode == "trans" ? "trans" : "wgs"
     def input = params.pbsim_mode == "trans"
         ? "--transcript ${chunk}"
@@ -47,7 +50,7 @@ process PBSIM3 {
         --pass-num ${params.pass_count} \\
         --prefix ${idpfx} \\
         --id-prefix movie.${idpfx} \\
-        --seed ${params.seed}
+        --seed ${seed}
     
     # if mode == wgs, merge all local files into one local chunk:
     if [ ${mode} == "wgs" ]; then
@@ -87,6 +90,11 @@ process PBSIM3 {
           echo "ERROR: PBSIM3 produced neither ${idpfx}.bam nor ${idpfx}.sam" >&2
           exit 1
       fi
+
+      # trans mode writes <prefix>.maf whose reference names are the transcript IDs.
+      mv ${idpfx}.maf ${out_maf}
+      printf 'ref_file\\tfasta_entry\\n' > ${ref_map}
+      awk -F'\\t' '{ print \$1 "\\t" \$1 }' ${chunk} >> ${ref_map}
     fi
 
     # PBSIM3 has no --version flag; the version is fixed by the pinned container image.
